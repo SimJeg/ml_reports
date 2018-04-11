@@ -22,4 +22,4 @@ Y_true = p < 0.6
 # Plot
 binary_classification_report(Y_true, Y_pred)
 ```
-![alt text](https://github.com/SimJeg/ml_reports/blob/master/binary_classification_report_output.png)
+![alt text](https://github.com/SimJeg/ml_reports/blob/master/binary_classification_output.png)
