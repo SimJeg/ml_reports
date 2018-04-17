@@ -1,5 +1,5 @@
 __author__ = 'Simon Jegou'
-__date__ = 'February 2018'
+__date__ = 'April 2018'
 
 import numpy as np
 import matplotlib.pylab as plt
@@ -61,7 +61,7 @@ def binary_classification_report(Y_true, Y_pred, show=True, bins=50):
     N = n - P
 
     print('n = {} samples'.format(n))
-    print('0/1 : {:.2f}% (N={}) / {:.2f}% (P={})'.format(
+    print('Negatives/Positives : {:.2f}% (N={}) / {:.2f}% (P={})'.format(
         100. * N / n, N, 100. * P / n, P))
 
     acc_list = [np.mean(Y_true == (Y_pred > t)) for t in np.arange(0, 1, 0.01)]
@@ -78,7 +78,11 @@ def binary_classification_report(Y_true, Y_pred, show=True, bins=50):
         print('Mean Average precision : {:.4f}'.format(average_precision_score(Y_true, Y_pred)))
 
     else:
-        def interactive_confusion_matrix(threshold):
+        def interactive_plots(threshold=0.5, alpha0 = 0.8, alpha1=0.8):
+            """
+            threshold : float in [0, 1]. Threshold to used to compute confusion matrix and accuracy
+            alpha0 and alpha1 : float in [0, 1]. Transparency parameters for the histogram.
+            """
 
             plt.figure(figsize=(22, 7))
 
@@ -121,10 +125,16 @@ def binary_classification_report(Y_true, Y_pred, show=True, bins=50):
 
             # Plot 2 : Histogram of predictions
             plt.subplot(142)
-            plt.hist(Y_pred[Y_true == 0], bins, histtype='bar', label='0', color='#69A3CB', alpha=0.8)
-            plt.hist(Y_pred[Y_true == 1], bins, histtype='bar', label='1', color='#F2613B', alpha=0.8)
+            if alpha0 > alpha1: 
+                # The histogram with highest alpha go first
+                plt.hist(Y_pred[Y_true == 0], bins, range=(0,1), histtype='bar', label='0', color='#69A3CB', alpha=alpha0)
+                plt.hist(Y_pred[Y_true == 1], bins, range=(0,1), histtype='bar', label='1', color='#F2613B', alpha=alpha1)
+            else:
+                plt.hist(Y_pred[Y_true == 1], bins, range=(0,1), histtype='bar', label='1', color='#F2613B', alpha=alpha1)
+                plt.hist(Y_pred[Y_true == 0], bins, range=(0,1), histtype='bar', label='0', color='#69A3CB', alpha=alpha0)
+                
             plt.axis([0, 1, 0, None])
-            plt.plot([threshold, threshold], [0, plt.ylim()[1]], c='r', alpha=0.5)
+            plt.plot([threshold, threshold], [0, plt.ylim()[1]], ':',c='r', alpha=0.5)
             plt.title('Histogram of predictions')
             plt.legend()
 
@@ -155,11 +165,21 @@ def binary_classification_report(Y_true, Y_pred, show=True, bins=50):
         # Check if we are in a notebook
         if getattr(get_ipython(), 'kernel', None) is not None:
             from ipywidgets import interact, FloatSlider
-            interact(interactive_confusion_matrix, 
+            interact(interactive_plots, 
                      threshold=FloatSlider(value=0.5, 
                                            min=0, 
                                            max=1, 
                                            step=0.01, 
+                                           continuous_update=False),
+                     alpha0=FloatSlider(value=0.8, 
+                                           min=0, 
+                                           max=1, 
+                                           step=0.1, 
+                                           continuous_update=False),
+                     alpha1=FloatSlider(value=0.8, 
+                                           min=0, 
+                                           max=1, 
+                                           step=0.1, 
                                            continuous_update=False))
         else:
-            interactive_confusion_matrix()
+            interactive_plots()
